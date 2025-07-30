@@ -17,17 +17,17 @@
     "lightweight",
     "javascript"
   ],
-  "author": "Your Name",
+  "author": "Br0wnHammer",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/lightweight-http-client.git"
+    "url": "https://github.com/Br0wnHammer/Flux.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/lightweight-http-client/issues"
+    "url": "https://github.com/Br0wnHammer/Flux/issues"
   },
-  "homepage": "https://github.com/yourusername/lightweight-http-client#readme"
+  "homepage": "https://github.com/Br0wnHammer/Flux#readme"
 }
