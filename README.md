@@ -1,7 +1,6 @@
 ![](https://img.shields.io/npm/v/flux.svg?style=flat)
 ![](https://img.shields.io/github/license/Br0wnHammer/Flux.svg?style=flat)
 ![](https://img.shields.io/github/repo-size/Br0wnHammer/Flux.svg?style=flat)
-![](https://img.shields.io/npm/d18m/flux)
 ![](https://img.shields.io/github/last-commit/Br0wnHammer/Flux.svg?style=flat)
 ![](https://img.shields.io/github/languages/top/Br0wnHammer/Flux.svg?style=flat)
 ![](https://img.shields.io/codecov/c/github/Br0wnHammer/Flux/develop?style=flat)
