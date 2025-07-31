@@ -1,3 +1,4 @@
+import http from 'http';
 import https from 'https';
 import { URL } from 'url';
 import {
@@ -69,7 +70,7 @@ export class HttpClient {
   }
 
   /**
-   * Create and execute a request using Node's https module to get timing stats.
+   * Create and execute a request using Node's http/https module to get timing stats.
    * @param url - Request URL
    * @param config - Request configuration
    * @returns An object with status, headers, body, and timings
@@ -95,7 +96,9 @@ export class HttpClient {
         total: null,
       };
 
-      const req = https.request(options, (res) => {
+      // Choose the appropriate module based on protocol
+      const requestModule = urlObj.protocol === 'https:' ? https : http;
+      const req = requestModule.request(options, (res) => {
         const chunks: Buffer[] = [];
         
         res.on('data', (chunk: Buffer) => {
@@ -126,10 +129,13 @@ export class HttpClient {
       });
 
       req.on('socket', (socket) => {
-        socket.on('secureConnect', () => {
-          timings.tlsHandshake =
-            (process.hrtime.bigint() - timings.start) / 1000000n;
-        });
+        // Only track TLS handshake for HTTPS requests
+        if (urlObj.protocol === 'https:') {
+          socket.on('secureConnect', () => {
+            timings.tlsHandshake =
+              (process.hrtime.bigint() - timings.start) / 1000000n;
+          });
+        }
       });
 
       req.on('timeout', () => {
