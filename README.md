@@ -1,122 +1,151 @@
-# Lightweight HTTP Client with Performance Timing
+# Flux - HTTP Client with Performance Timing
 
-A high-performance, Node.js-specific HTTP client that provides detailed timing metrics including TLS handshake duration, time to first byte (TTFB), and total request time.
+A simple, flexible, and **type-safe** HTTP client for TypeScript with comprehensive type definitions and interfaces.
 
-## ✨ Features
+## Features
 
-- 🚀 **Performance Timing**: Detailed timing metrics for every request
-- 🔐 **TLS Handshake Measurement**: Precise SSL/TLS handshake duration
-- ⚡ **Time to First Byte (TTFB)**: Network latency measurement
-- 📊 **Total Request Time**: Complete request lifecycle timing
-- 🛡️ **Node.js Native**: Built specifically for Node.js environments
-- 📦 **ES Modules**: Modern ES6+ module system
-- 🔧 **Zero Dependencies**: Pure Node.js implementation
-- 🎯 **TypeScript Ready**: Full JSDoc documentation
+- **Full TypeScript Support** - Complete type safety with interfaces and generics
+- **Comprehensive Type Definitions** - All request/response types are properly typed
+- **Generic Methods** - Type-safe HTTP methods with generic response types
+- **Error Handling** - Custom error classes with proper typing
+- **Request Timing** - Built-in performance monitoring
+- **Authentication** - Easy token-based authentication
+- **Custom Headers** - Flexible header management
+- **Multiple HTTP Methods** - GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
+- **Response Parsing** - Automatic content-type detection and parsing
+- **Timeout Support** - Configurable request timeouts
+- **Base URL Support** - Convenient base URL configuration
 
-## 📦 Installation
+## Installation
 
 ```bash
-# Clone or download the http-client.js file
+npm install flux
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-```javascript
-import HttpClient from './http-client.js';
+```typescript
+import HttpClient from 'flux';
 
 // Create a client with base URL
 const client = new HttpClient('https://api.example.com');
 
-// Make a request with timing data
-const result = await client.get('/posts/1');
+// Type-safe GET request
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
-console.log('Data:', result.data);
-console.log('Total time:', result.timings.total.toFixed(2) + 'ms');
-console.log('TLS Handshake:', result.timings.tlsHandshake?.toFixed(2) + 'ms');
-console.log('Time to first byte:', result.timings.ttfb?.toFixed(2) + 'ms');
+const response = await client.get<User>('/users/1');
+console.log(response.data.name); // TypeScript knows this is a User
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### Constructor
 
-```javascript
-new HttpClient(baseURL, defaultConfig)
+```typescript
+new HttpClient(baseURL?: string, defaultConfig?: Partial<DefaultConfig>)
 ```
 
 **Parameters:**
-- `baseURL` (string, optional): Base URL for all requests
-- `defaultConfig` (object, optional): Default configuration
-
-**Example:**
-```javascript
-const client = new HttpClient('https://api.example.com', {
-  headers: {
-    'Content-Type': 'application/json',
-    'User-Agent': 'MyApp/1.0'
-  },
-  timeout: 10000
-});
-```
+- `baseURL` (optional): Base URL for all requests
+- `defaultConfig` (optional): Default configuration object
 
 ### HTTP Methods
 
-#### GET Request
-```javascript
-const result = await client.get(endpoint, config)
+All methods support generic types for type-safe responses:
+
+```typescript
+// GET request
+const response = await client.get<ResponseType>(endpoint, config?);
+
+// POST request
+const response = await client.post<ResponseType>(endpoint, data?, config?);
+
+// PUT request
+const response = await client.put<ResponseType>(endpoint, data?, config?);
+
+// DELETE request
+const response = await client.delete<ResponseType>(endpoint, config?);
 ```
 
-#### POST Request
-```javascript
-const result = await client.post(endpoint, data, config)
-```
+### Type Definitions
 
-#### PUT Request
-```javascript
-const result = await client.put(endpoint, data, config)
-```
-
-#### DELETE Request
-```javascript
-const result = await client.delete(endpoint, config)
-```
-
-### Response Format
-
-All methods return a consistent response object:
-
-```javascript
-{
-  data: any,           // Parsed response data
-  timings: {
-    total: number,      // Total request time in milliseconds
-    tlsHandshake: number | null,  // TLS handshake time (HTTPS only)
-    ttfb: number | null // Time to first byte in milliseconds
-  },
-  statusCode: number,   // HTTP status code
-  headers: object       // Response headers
+#### RequestConfig
+```typescript
+interface RequestConfig {
+  method?: HttpMethod;
+  headers?: Record<string, string>;
+  timeout?: number;
+  body?: string | Buffer;
+  rawResponse?: boolean;
 }
 ```
 
-### Configuration Options
-
-```javascript
-{
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer token'
-  },
-  timeout: 10000,      // Request timeout in milliseconds
-  rawResponse: false   // Return raw response object
+#### HttpResponse
+```typescript
+interface HttpResponse<T = ResponseData> {
+  data: T;
+  timings: ResponseTimings;
+  statusCode: number;
+  headers: IncomingHttpHeaders;
 }
 ```
 
-## 📊 Timing Metrics Explained
+#### ResponseTimings
+```typescript
+interface ResponseTimings {
+  start: bigint;
+  tlsHandshake: bigint | null;
+  ttfb: bigint | null; // Time to first byte
+  total: bigint | null;
+}
+```
 
-### Total Request Time
-- **What**: Complete time from request start to response end
-- **Includes**: DNS resolution, connection, TLS handshake, data transfer
-- **Use Case**: Overall performance measurement
+### Configuration
+
+#### Setting Default Headers
+```typescript
+client.setDefaultHeaders({
+  'Authorization': 'Bearer token',
+  'X-Custom-Header': 'value'
+});
+```
+
+#### Setting Authentication Token
+```typescript
+client.setAuthToken('your-token-here');
+client.setAuthToken('your-token-here', 'Custom'); // Custom token type
+```
+
+#### Clearing Authentication
+```typescript
+client.clearAuthToken();
+```
+
+
+## Examples
+
+### Basic Usage
+
+```typescript
+import HttpClient from 'flux';
+
+const client = new HttpClient('https://jsonplaceholder.typicode.com');
+
+// Simple GET request
+const users = await client.get<User[]>('/users');
+console.log(users.data.length);
+
+// POST with data
+const newUser = await client.post<User>('/users', {
+  name: 'John Doe',
+  email: 'john@example.com'
+});
+
+```
 
 ### TLS Handshake Duration
 - **What**: Time to establish secure connection (HTTPS only)

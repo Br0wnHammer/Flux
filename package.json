@@ -1,12 +1,17 @@
 {
-  "name": "lightweight-http-client",
+  "name": "flux",
   "version": "1.0.0",
-  "description": "A simple, flexible, and lightweight HTTP client for JavaScript",
-  "main": "http-client.js",
+  "description": "Flux - A simple, flexible, and lightweight HTTP client for TypeScript",
+  "main": "dist/http-client.js",
+  "types": "dist/http-client.d.ts",
   "type": "module",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
     "test": "node test.js",
-    "start": "node test.js"
+    "start": "node test.js",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean"
   },
   "keywords": [
     "http",
@@ -15,12 +20,16 @@
     "api",
     "request",
     "lightweight",
-    "javascript"
+    "typescript"
   ],
   "author": "Br0wnHammer",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "typescript": "^5.8.3"
   },
   "repository": {
     "type": "git",
