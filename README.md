@@ -1,4 +1,4 @@
-![](https://img.shields.io/npm/v/flux.svg?style=flat)
+![](https://img.shields.io/npm/v/flux-http.svg?style=flat)
 ![](https://img.shields.io/github/license/Br0wnHammer/Flux.svg?style=flat)
 ![](https://img.shields.io/github/repo-size/Br0wnHammer/Flux.svg?style=flat)
 ![](https://img.shields.io/github/last-commit/Br0wnHammer/Flux.svg?style=flat)
@@ -27,7 +27,7 @@ A lightweight, flexible, and type-safe HTTP client for Node.js with comprehensiv
 ## Installation
 
 ```bash
-npm install flux
+npm install flux-http
 ```
 
 ## TypeScript Support
@@ -35,7 +35,7 @@ npm install flux
 The package includes full TypeScript support with comprehensive type definitions. You can import types for better intellisense:
 
 ```typescript
-import { HttpClient, HttpResponse, RequestConfig, HttpClientError } from "flux";
+import { HttpClient, HttpResponse, RequestConfig, HttpClientError } from "flux-http";
 
 // Type-safe API responses
 interface User {
@@ -52,7 +52,7 @@ const response: HttpResponse<User> = await client.get<User>('/users/1');
 ## Quick Start
 
 ```typescript
-import { HttpClient } from "flux";
+import { HttpClient } from "flux-http";
 
 // Create a new HTTP client
 const client = new HttpClient('https://api.example.com');
