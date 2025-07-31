@@ -1,5 +1,5 @@
 {
-  "name": "flux",
+  "name": "flux-http",
   "version": "1.0.0",
   "description": "Flux - A simple, flexible, and lightweight HTTP client for TypeScript",
   "main": "dist/http-client.js",
