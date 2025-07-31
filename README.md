@@ -1,20 +1,29 @@
-# Flux - HTTP Client with Performance Timing
+![](https://img.shields.io/npm/v/flux.svg?style=flat)
+![](https://img.shields.io/github/license/Br0wnHammer/Flux.svg?style=flat)
+![](https://img.shields.io/github/repo-size/Br0wnHammer/Flux.svg?style=flat)
+![](https://img.shields.io/npm/d18m/flux)
+![](https://img.shields.io/github/last-commit/Br0wnHammer/Flux.svg?style=flat)
+![](https://img.shields.io/github/languages/top/Br0wnHammer/Flux.svg?style=flat)
+![](https://img.shields.io/codecov/c/github/Br0wnHammer/Flux/develop?style=flat)
 
-A simple, flexible, and **type-safe** HTTP client for TypeScript with comprehensive type definitions and interfaces.
+# Flux
+
+A lightweight, flexible, and type-safe HTTP client for Node.js with comprehensive timing metrics and full TypeScript support.
+
+**GitHub:** [https://github.com/Br0wnHammer/Flux](https://github.com/Br0wnHammer/Flux)
 
 ## Features
 
-- **Full TypeScript Support** - Complete type safety with interfaces and generics
-- **Comprehensive Type Definitions** - All request/response types are properly typed
-- **Generic Methods** - Type-safe HTTP methods with generic response types
-- **Error Handling** - Custom error classes with proper typing
-- **Request Timing** - Built-in performance monitoring
-- **Authentication** - Easy token-based authentication
-- **Custom Headers** - Flexible header management
-- **Multiple HTTP Methods** - GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS
-- **Response Parsing** - Automatic content-type detection and parsing
-- **Timeout Support** - Configurable request timeouts
-- **Base URL Support** - Convenient base URL configuration
+- **Type-Safe**: Full TypeScript support with generic response types
+- **Performance Metrics**: Detailed timing information (TLS handshake, TTFB, total time)
+- **Flexible Configuration**: Custom headers, timeouts, and request options
+- **Authentication Support**: Built-in token management
+- **Error Handling**: Comprehensive error types and handling
+- **Lightweight**: Minimal dependencies, built on Node.js native modules
+- **ES Module Support**: Modern ES module architecture
+- **Content Type Detection**: Automatic response parsing based on content type
+- **Base URL Support**: Convenient base URL configuration
+- **Request/Response Interceptors**: Custom request and response processing
 
 ## Installation
 
@@ -22,40 +31,137 @@ A simple, flexible, and **type-safe** HTTP client for TypeScript with comprehens
 npm install flux
 ```
 
-## Quick Start
+## TypeScript Support
+
+The package includes full TypeScript support with comprehensive type definitions. You can import types for better intellisense:
 
 ```typescript
-import HttpClient from 'flux';
+import { HttpClient, HttpResponse, RequestConfig, HttpClientError } from "flux";
 
-// Create a client with base URL
-const client = new HttpClient('https://api.example.com');
-
-// Type-safe GET request
+// Type-safe API responses
 interface User {
   id: number;
   name: string;
   email: string;
+  username: string;
 }
 
-const response = await client.get<User>('/users/1');
-console.log(response.data.name); // TypeScript knows this is a User
+const client = new HttpClient('https://api.example.com');
+const response: HttpResponse<User> = await client.get<User>('/users/1');
+```
+
+## Quick Start
+
+```typescript
+import { HttpClient } from "flux";
+
+// Create a new HTTP client
+const client = new HttpClient('https://api.example.com');
+
+// Make a GET request
+const response = await client.get('/users/1');
+console.log('User data:', response.data);
+console.log('Response time:', response.timings.total + 'ms');
+
+// Make a POST request
+const newUser = { name: 'John Doe', email: 'john@example.com' };
+const createResponse = await client.post('/users', newUser);
+console.log('Created user:', createResponse.data);
+
+// Set authentication
+client.setAuthToken('your-auth-token');
 ```
 
 ## API Reference
 
-### Constructor
+### HttpClient Class
+
+The main HTTP client class that handles all HTTP requests.
+
+#### Constructor
 
 ```typescript
 new HttpClient(baseURL?: string, defaultConfig?: Partial<DefaultConfig>)
 ```
 
 **Parameters:**
-- `baseURL` (optional): Base URL for all requests
-- `defaultConfig` (optional): Default configuration object
 
-### HTTP Methods
+- `baseURL` (optional): Base URL for all requests. Default: empty string
+- `defaultConfig` (optional): Default configuration for all requests
 
-All methods support generic types for type-safe responses:
+**Example:**
+
+```typescript
+const client = new HttpClient('https://api.example.com', {
+  headers: {
+    'Content-Type': 'application/json',
+    'User-Agent': 'MyApp/1.0'
+  },
+  timeout: 10000
+});
+```
+
+#### Methods
+
+##### `get<T>(endpoint: string, config?: RequestConfig): Promise<HttpResponse<T>>`
+
+Makes a GET request to the specified endpoint.
+
+**Parameters:**
+
+- `endpoint`: API endpoint (relative to base URL)
+- `config` (optional): Request-specific configuration
+
+**Returns:** `Promise<HttpResponse<T>>` - Response with data, timings, and metadata
+
+**Example:**
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const response: HttpResponse<User> = await client.get<User>('/users/1');
+console.log('User:', response.data);
+console.log('Time to first byte:', response.timings.ttfb + 'ms');
+console.log('Total time:', response.timings.total + 'ms');
+```
+
+##### `post<T>(endpoint: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>`
+
+Makes a POST request to the specified endpoint.
+
+**Parameters:**
+
+- `endpoint`: API endpoint (relative to base URL)
+- `data` (optional): Request payload
+- `config` (optional): Request-specific configuration
+
+**Returns:** `Promise<HttpResponse<T>>` - Response with data, timings, and metadata
+
+**Example:**
+
+```typescript
+const newUser = { name: 'Jane Doe', email: 'jane@example.com' };
+const response: HttpResponse<User> = await client.post<User>('/users', newUser);
+console.log('Created user:', response.data);
+```
+
+##### `put<T>(endpoint: string, data?: any, config?: RequestConfig): Promise<HttpResponse<T>>`
+
+Makes a PUT request to the specified endpoint.
+
+**Parameters:**
+
+- `endpoint`: API endpoint (relative to base URL)
+- `data` (optional): Request payload
+- `config` (optional): Request-specific configuration
+
+**Returns:** `Promise<HttpResponse<T>>` - Response with data, timings, and metadata
+
+**Example:**
 
 ```typescript
 // GET request
@@ -76,31 +182,32 @@ const response = await client.delete<ResponseType>(endpoint, config?);
 #### RequestConfig
 ```typescript
 interface RequestConfig {
-  method?: HttpMethod;
-  headers?: Record<string, string>;
-  timeout?: number;
-  body?: string | Buffer;
-  rawResponse?: boolean;
+  method?: HttpMethod;           // HTTP method (GET, POST, PUT, DELETE)
+  headers?: Record<string, string>; // Request headers
+  timeout?: number;              // Request timeout in milliseconds
+  body?: string | Buffer;        // Request body
+  rawResponse?: boolean;         // Return raw response without parsing
 }
 ```
 
 #### HttpResponse
 ```typescript
 interface HttpResponse<T = ResponseData> {
-  data: T;
-  timings: ResponseTimings;
-  statusCode: number;
-  headers: IncomingHttpHeaders;
+  data: T;                       // Parsed response data
+  timings: ResponseTimings;      // Timing information
+  statusCode: number;            // HTTP status code
+  headers: IncomingHttpHeaders;  // Response headers
 }
 ```
 
 #### ResponseTimings
+
 ```typescript
 interface ResponseTimings {
-  start: bigint;
-  tlsHandshake: bigint | null;
-  ttfb: bigint | null; // Time to first byte
-  total: bigint | null;
+  start: bigint;                 // Request start time
+  tlsHandshake: bigint | null;   // TLS handshake duration (HTTPS only)
+  ttfb: bigint | null;           // Time to first byte
+  total: bigint | null;          // Total request duration
 }
 ```
 
@@ -126,56 +233,93 @@ client.clearAuthToken();
 ```
 
 
-## Examples
+### Performance Monitoring
 
-### Basic Usage
+Monitor request performance with detailed timing metrics:
 
 ```typescript
-import HttpClient from 'flux';
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  username: string;
+}
 
-const client = new HttpClient('https://jsonplaceholder.typicode.com');
+interface CreateUserRequest {
+  name: string;
+  email: string;
+  username: string;
+}
 
-// Simple GET request
-const users = await client.get<User[]>('/users');
-console.log(users.data.length);
+class UserApiClient {
+  private client: HttpClient;
 
-// POST with data
-const newUser = await client.post<User>('/users', {
-  name: 'John Doe',
-  email: 'john@example.com'
-});
+  constructor(baseURL: string) {
+    this.client = new HttpClient(baseURL);
+  }
 
+  async getUsers(): Promise<User[]> {
+    const response = await this.client.get<User[]>('/users');
+    return response.data;
+  }
+
+  async getUser(id: number): Promise<User> {
+    const response = await this.client.get<User>(`/users/${id}`);
+    return response.data;
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<User> {
+    const response = await this.client.post<User>('/users', userData);
+    return response.data;
+  }
+
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const response = await this.client.put<User>(`/users/${id}`, userData);
+    return response.data;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await this.client.delete(`/users/${id}`);
+  }
+}
+
+### Custom Request Configuration
+
+Configure requests with custom headers, timeouts, and options:
+
+```typescript
+const client = new HttpClient('https://api.example.com');
+
+// Custom configuration for a specific request
+const customConfig: RequestConfig = {
+  headers: {
+    'X-Custom-Header': 'custom-value',
+    'Accept': 'application/json',
+    'Cache-Control': 'no-cache'
+  },
+  timeout: 5000, // 5 seconds
+};
+
+const response = await client.get('/users', customConfig);
 ```
 
-### TLS Handshake Duration
-- **What**: Time to establish secure connection (HTTPS only)
-- **Includes**: Certificate verification, key exchange
-- **Use Case**: SSL/TLS performance analysis
+### Authentication Examples
 
-### Time to First Byte (TTFB)
-- **What**: Time until first response byte is received
-- **Includes**: Server processing time + network latency
-- **Use Case**: Server responsiveness measurement
+Different authentication patterns:
 
-## 🔧 Advanced Configuration
+```typescript
+const client = new HttpClient('https://api.example.com');
 
-### Setting Default Headers
+// Bearer token authentication
+client.setAuthToken('your-jwt-token');
 
-```javascript
+// API key authentication
+client.setAuthToken('your-api-key', 'ApiKey');
+
+// Custom authorization header
 client.setDefaultHeaders({
-  'X-API-Key': 'your-api-key',
-  'User-Agent': 'MyApp/1.0'
+  'Authorization': 'Custom your-custom-token'
 });
-```
-
-### Custom Authentication
-
-```javascript
-// Bearer token (default)
-client.setAuthToken('your-token');
-
-// Custom auth type
-client.setAuthToken('your-token', 'Custom');
 
 // Clear authentication
 client.clearAuthToken();
@@ -183,10 +327,14 @@ client.clearAuthToken();
 
 ### Error Handling
 
-```javascript
+Comprehensive error handling with specific error types:
+
+```typescript
+const client = new HttpClient('https://api.example.com');
+
 try {
-  const result = await client.get('/posts/1');
-  console.log('Success:', result.data);
+  const response = await client.get('/users/1');
+  console.log('Success:', response.data);
 } catch (error) {
   console.error('Request failed:', error.message);
   
@@ -197,23 +345,29 @@ try {
     console.log('Resource not found');
   }
 }
+
+// Usage
+const perfClient = new PerformanceClient('https://api.example.com');
+const result = await perfClient.getWithMetrics('/users/1');
+
+console.log('Data:', result.data);
+console.log('TTFB:', result.metrics.ttfb + 'ms');
+console.log('Total:', result.metrics.total + 'ms');
 ```
 
-## 🧪 Testing
+## Development
 
-Run the comprehensive test suite:
+### Building
 
 ```bash
-node test.js
+npm run build
 ```
 
-## 📈 Performance Benefits
+### Development Mode
 
-- **Native Node.js**: No external dependencies
-- **Precise Timing**: High-resolution timing with `process.hrtime.bigint()`
-- **Memory Efficient**: Minimal memory footprint
-- **Fast Parsing**: Optimized response parsing
-- **Error Resilient**: Robust error handling
+```bash
+npm run dev
+```
 
 ### Common Issues
 
@@ -222,26 +376,37 @@ node test.js
 3. **TLS Errors**: Verify SSL certificate validity
 4. **Parsing Errors**: Check response content type
 
-### Building
+### Clean Build
 
-No build step required - pure JavaScript with ES modules.
+```bash
+npm run clean
+npm run build
+```
 
-### Contributing
+## Requirements
+
+- Node.js >= 18.0.0
+- TypeScript >= 5.8.3 (for development)
+
+## License
+
+MIT
+
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 License
+## Changelog
 
-MIT License - feel free to use in your projects!
-
-## 🤝 Support
-
-For issues, questions, or contributions, please open an issue on the repository.
-
----
-
-**Built with ❤️ for Node.js performance monitoring** 
+### 1.0.0
+- Initial release
+- Full TypeScript support
+- Performance timing metrics
+- Authentication support
+- Comprehensive error handling
+- Content type detection
+- ES module support 
