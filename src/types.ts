@@ -11,9 +11,10 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export interface RequestConfig {
   method?: HttpMethod;
   headers?: Record<string, string>;
+  body?: string | Buffer | null;
   timeout?: number;
-  body?: string | Buffer;
   rawResponse?: boolean;
+  contentType?: 'json' | 'form' | 'multipart' | 'text' | 'binary';
 }
 
 /**
@@ -57,6 +58,8 @@ export interface HttpResponse<T = ResponseData> {
 export interface DefaultConfig {
   headers: Record<string, string>;
   timeout: number;
+  rawResponse?: boolean;
+  contentType?: 'json' | 'form' | 'multipart' | 'text' | 'binary';
 }
 
 /**
@@ -118,6 +121,10 @@ export class HttpClientError extends Error {
   ) {
     super(message);
     this.name = 'HttpClientError';
+    // eslint-disable-next-line no-unused-vars
+    this.statusCode = statusCode;
+    // eslint-disable-next-line no-unused-vars
+    this.response = response;
   }
 }
 
@@ -133,4 +140,19 @@ export class NetworkError extends HttpClientError {
     super(`Network error: ${message}`);
     this.name = 'NetworkError';
   }
+}
+
+export class ValidationError extends HttpClientError {
+  constructor(message: string) {
+    super(`Validation error: ${message}`);
+    this.name = 'ValidationError';
+  }
+} 
+
+export interface FormData {
+  [key: string]: string | Buffer | { filename: string; content: Buffer; contentType?: string };
+}
+
+export interface MultipartFormData {
+  [key: string]: string | Buffer | { filename: string; content: Buffer; contentType?: string };
 } 
