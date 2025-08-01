@@ -338,12 +338,13 @@ export class HttpClient {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         };
 
-      case 'multipart':
+      case 'multipart': {
         const { body, boundary } = this._serializeMultipartData(data);
         return {
           body,
           headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` }
         };
+      }
 
       case 'text':
         return {
@@ -351,7 +352,7 @@ export class HttpClient {
           headers: { 'Content-Type': 'text/plain' }
         };
 
-      case 'binary':
+      case 'binary': {
         if (Buffer.isBuffer(data)) {
           return {
             body: data,
@@ -359,6 +360,7 @@ export class HttpClient {
           };
         }
         throw new NetworkError('Binary content type requires Buffer data');
+      }
 
       default:
         return {

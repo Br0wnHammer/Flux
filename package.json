@@ -6,19 +6,21 @@
   "types": "dist/http-client.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "build:min": "tsc && npm run minify",
+    "build": "npm run lint && npm run test && tsc",
+    "build:min": "npm run lint && npm run test && tsc && npm run minify",
     "minify": "terser dist/http-client.js -o dist/http-client.min.js --compress --mangle",
     "bundle-size": "npm run build:min && echo 'Bundle sizes:' && ls -lh dist/*.js",
     "dev": "tsc --watch",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --ci --coverage --watchAll=false",
     "start": "node test.js",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "ci": "npm run lint && npm run test:ci && npm run build"
   },
   "keywords": [
     "http",

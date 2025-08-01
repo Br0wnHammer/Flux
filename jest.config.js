@@ -20,4 +20,6 @@ export default {
     }],
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // Increase timeout for integration tests and network requests
+  testTimeout: 30000, // 30 seconds
 }; 
