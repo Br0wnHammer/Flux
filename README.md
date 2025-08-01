@@ -325,6 +325,201 @@ client.setDefaultHeaders({
 client.clearAuthToken();
 ```
 
+### Content Type Support
+
+Flux HTTP client provides comprehensive support for different content types with automatic parsing and serialization. The client can handle various data formats for both requests and responses.
+
+#### Supported Content Types
+
+##### 1. JSON (Default)
+**Content-Type:** `application/json`
+
+**Request Usage:**
+```typescript
+// Automatic JSON serialization (default)
+const userData = { name: 'John Doe', email: 'john@example.com' };
+const response = await client.post('/users', userData);
+
+// Explicit JSON content type
+const response = await client.post('/users', userData, {
+  contentType: 'json'
+});
+```
+
+**Response Parsing:** Automatically parses JSON responses into JavaScript objects.
+
+##### 2. Form Data
+**Content-Type:** `application/x-www-form-urlencoded`
+
+**Request Usage:**
+```typescript
+// Using postForm method (recommended)
+const formData = {
+  username: 'johndoe',
+  password: 'secret123',
+  remember: 'true'
+};
+const response = await client.postForm('/login', formData);
+
+// Using contentType option
+const response = await client.post('/login', formData, {
+  contentType: 'form'
+});
+```
+
+**Response Parsing:** Returns URL-encoded string data.
+
+##### 3. Multipart Form Data
+**Content-Type:** `multipart/form-data`
+
+**Request Usage:**
+```typescript
+import { MultipartFormData } from 'flux-http';
+
+// File upload with multipart data
+const multipartData: MultipartFormData = {
+  username: 'johndoe',
+  avatar: {
+    filename: 'avatar.jpg',
+    content: Buffer.from('file content'),
+    contentType: 'image/jpeg'
+  },
+  bio: 'Software developer'
+};
+
+const response = await client.postMultipart('/upload', multipartData);
+
+// Using contentType option
+const response = await client.post('/upload', multipartData, {
+  contentType: 'multipart'
+});
+```
+
+**MultipartFormData Interface:**
+```typescript
+interface MultipartFormData {
+  [key: string]: string | Buffer | {
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  };
+}
+```
+
+##### 4. Plain Text
+**Content-Type:** `text/plain`
+
+**Request Usage:**
+```typescript
+// Using postText method (recommended)
+const textData = 'Hello, World!';
+const response = await client.postText('/message', textData);
+
+// Using contentType option
+const response = await client.post('/message', textData, {
+  contentType: 'text'
+});
+```
+
+**Response Parsing:** Returns plain text as string.
+
+##### 5. Binary Data
+**Content-Type:** `application/octet-stream`
+
+**Request Usage:**
+```typescript
+// Using postBinary method (recommended)
+const binaryData = Buffer.from('binary content');
+const response = await client.postBinary('/upload', binaryData);
+
+// Using contentType option
+const response = await client.post('/upload', binaryData, {
+  contentType: 'binary'
+});
+```
+
+**Response Parsing:** Returns Buffer for binary responses.
+
+#### Response Content Type Detection
+
+The client automatically detects and parses responses based on the `Content-Type` header:
+
+```typescript
+// JSON responses (application/json)
+const jsonResponse = await client.get('/api/users');
+console.log(typeof jsonResponse.data); // 'object'
+
+// Text responses (text/*)
+const textResponse = await client.get('/api/status');
+console.log(typeof textResponse.data); // 'string'
+
+// Binary responses (application/octet-stream, image/*, application/pdf)
+const binaryResponse = await client.get('/api/file');
+console.log(Buffer.isBuffer(binaryResponse.data)); // true
+
+// XML responses (application/xml, text/xml)
+const xmlResponse = await client.get('/api/data');
+console.log(typeof xmlResponse.data); // 'string'
+```
+
+#### Custom Content Type Configuration
+
+You can set custom content types for specific requests:
+
+```typescript
+// Custom JSON content type
+const response = await client.post('/api/data', data, {
+  headers: {
+    'Content-Type': 'application/vnd.api+json'
+  }
+});
+
+// Custom XML content type
+const response = await client.post('/api/data', xmlData, {
+  headers: {
+    'Content-Type': 'application/soap+xml'
+  }
+});
+```
+
+#### Content Type Examples
+
+**File Upload with Metadata:**
+```typescript
+const fileData: MultipartFormData = {
+  file: {
+    filename: 'document.pdf',
+    content: fs.readFileSync('document.pdf'),
+    contentType: 'application/pdf'
+  },
+  title: 'Important Document',
+  description: 'Uploaded via Flux HTTP client'
+};
+
+const response = await client.postMultipart('/documents', fileData);
+```
+
+**API with Different Content Types:**
+```typescript
+// JSON API
+const user = await client.post('/users', {
+  name: 'Jane Doe',
+  email: 'jane@example.com'
+});
+
+// Form submission
+const login = await client.postForm('/auth/login', {
+  username: 'janedoe',
+  password: 'password123'
+});
+
+// File upload
+const upload = await client.postBinary('/files', fileBuffer);
+
+// Text message
+const message = await client.postText('/messages', 'Hello from Flux!');
+```
+
 ### Error Handling
 
 Comprehensive error handling with specific error types:
