@@ -12,6 +12,10 @@ A lightweight, flexible, and type-safe HTTP client for Node.js with comprehensiv
 
 **GitHub:** [https://github.com/Br0wnHammer/Flux](https://github.com/Br0wnHammer/Flux)
 
+### Contributors
+
+- **[Ankit Sharma](https://github.com/beingmartinbmc)**
+
 ## Features
 
 - **Type-Safe**: Full TypeScript support with generic response types
