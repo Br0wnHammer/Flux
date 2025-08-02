@@ -7,6 +7,13 @@ describe('Integration Tests', () => {
     client = new HttpClient('https://jsonplaceholder.typicode.com');
   });
 
+  afterEach(async () => {
+    // Clear any authentication tokens to prevent connection reuse issues
+    client.clearAuthToken();
+    // Small delay to allow connections to close
+    await new Promise(resolve => setTimeout(resolve, 100));
+  });
+
   describe('Real API Integration', () => {
     it('should fetch posts from JSONPlaceholder API', async () => {
       const response = await client.get('/posts');

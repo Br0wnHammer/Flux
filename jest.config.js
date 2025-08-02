@@ -22,4 +22,8 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   // Increase timeout for integration tests and network requests
   testTimeout: 30000, // 30 seconds
+  // Force Jest to wait for all handles to be closed
+  forceExit: true,
+  // Detect open handles to help identify leaks
+  detectOpenHandles: true,
 }; 

@@ -753,6 +753,15 @@ export class HttpClient {
       ...headers,
     };
   }
+
+  /**
+   * Clean up any open connections (useful for testing)
+   */
+  cleanup(): void {
+    // This method can be used to clean up any persistent connections
+    // Currently, Node.js handles connection cleanup automatically
+    // but this provides a hook for future connection pooling
+  }
 }
 
 export default HttpClient; 

@@ -318,6 +318,8 @@ describe('HttpClient', () => {
         resolve();
       }
     });
+    // Additional cleanup to ensure all connections are closed
+    await new Promise(resolve => setTimeout(resolve, 500));
   });
 
   describe('Constructor', () => {
