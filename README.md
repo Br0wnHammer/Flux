@@ -597,6 +597,16 @@ MIT
 
 ## Changelog
 
+### 1.1.0
+- **Comprehensive Test Suite**: Added extensive test coverage with 4 test files
+- **Testing Infrastructure**: Added Jest configuration with ESM support, coverage reporting, and CI setup
+- **Code Quality**: Added ESLint configuration for code linting and formatting
+- **Documentation**: Added detailed optimization analysis (`OPTIMIZATION_ANALYSIS.md`) with bundle size comparisons
+- **Build System**: Enhanced build scripts with minification, bundle size analysis, and CI pipeline
+- **Performance Monitoring**: Added memory usage tests and concurrent request handling validation
+- **Error Handling**: Comprehensive error class testing and validation
+- **Type Safety**: Enhanced TypeScript type definitions and validation
+
 ### 1.0.0
 - Initial release
 - Full TypeScript support
