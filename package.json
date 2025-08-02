@@ -6,12 +6,21 @@
   "types": "dist/http-client.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run lint && npm run test && tsc",
+    "build:min": "npm run lint && npm run test && tsc && npm run minify",
+    "minify": "terser dist/http-client.js -o dist/http-client.min.js --compress --mangle",
+    "bundle-size": "npm run build:min && echo 'Bundle sizes:' && ls -lh dist/*.js",
     "dev": "tsc --watch",
-    "test": "node test.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:ci": "node --experimental-vm-modules node_modules/jest/bin/jest.js --ci --coverage --watchAll=false",
     "start": "node test.js",
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "ci": "npm run lint && npm run test:ci && npm run build"
   },
   "keywords": [
     "http",
@@ -28,7 +37,14 @@
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.19.9",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "terser": "^5.43.1",
+    "ts-jest": "^29.1.2",
     "typescript": "^5.8.3"
   },
   "repository": {
