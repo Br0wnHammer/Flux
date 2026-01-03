@@ -19,7 +19,10 @@ export type {
   NodeRequestOptions, 
   ContentType,
   FormData,
-  MultipartFormData
+  MultipartFormData,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor
 } from './types.js';
 
 export { HttpClientError, TimeoutError, NetworkError, ValidationError } from './types.js';

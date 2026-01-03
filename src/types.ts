@@ -155,4 +155,14 @@ export interface FormData {
 
 export interface MultipartFormData {
   [key: string]: string | Buffer | { filename: string; content: Buffer; contentType?: string };
-} 
+}
+
+/**
+ * Interceptor function types
+ */
+// eslint-disable-next-line no-unused-vars
+export type RequestInterceptor = (config: RequestConfig) => RequestConfig | Promise<RequestConfig>;
+// eslint-disable-next-line no-unused-vars
+export type ResponseInterceptor<T = ResponseData> = (response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>;
+// eslint-disable-next-line no-unused-vars
+export type ErrorInterceptor = (error: HttpClientError) => HttpClientError | Promise<HttpClientError>; 

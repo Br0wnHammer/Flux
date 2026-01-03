@@ -329,6 +329,36 @@ client.setDefaultHeaders({
 client.clearAuthToken();
 ```
 
+### Request/Response Interceptors
+
+Intercept and modify requests/responses globally:
+
+```typescript
+// Add authentication to all requests
+client.addRequestInterceptor((config) => ({
+  ...config,
+  headers: {
+    ...config.headers,
+    'Authorization': 'Bearer your-token'
+  }
+}));
+
+// Log response times
+client.addResponseInterceptor((response) => {
+  console.log(`Request took ${response.timings.total}ms`);
+  return response;
+});
+
+// Handle errors globally
+client.addErrorInterceptor((error) => {
+  console.log('Request failed:', error.message);
+  return error;
+});
+
+// Clear interceptors
+client.clearAllInterceptors();
+```
+
 ### Content Type Support
 
 Flux HTTP client provides comprehensive support for different content types with automatic parsing and serialization. The client can handle various data formats for both requests and responses.
@@ -600,6 +630,15 @@ MIT
 5. Open a Pull Request
 
 ## Changelog
+
+### 1.2.0
+- **Request/Response Interceptors**: Added comprehensive interceptor system for requests, responses, and errors
+- **Middleware Support**: Enable global request/response transformation and error handling
+- **Authentication Interceptors**: Built-in patterns for token management and refresh
+- **Logging Interceptors**: Easy request/response logging and performance monitoring
+- **Async Interceptor Support**: Full support for async interceptor functions
+- **TypeScript Interceptors**: Complete type safety for interceptor functions
+- **Interceptor Management**: Methods to add, clear, and manage interceptors
 
 ### 1.1.0
 - **Comprehensive Test Suite**: Added extensive test coverage with 4 test files
