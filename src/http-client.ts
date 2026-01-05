@@ -13,7 +13,10 @@ import {
   HttpClientError,
   TimeoutError,
   NetworkError,
-  MultipartFormData
+  MultipartFormData,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor
 } from './types.js';
 
 /**
@@ -23,6 +26,9 @@ import {
 export class HttpClient {
   private baseURL: string;
   private defaultConfig: DefaultConfig;
+  private requestInterceptors: RequestInterceptor[] = [];
+  private responseInterceptors: ResponseInterceptor[] = [];
+  private errorInterceptors: ErrorInterceptor[] = [];
 
   constructor(baseURL: string = '', defaultConfig: Partial<DefaultConfig> = {}) {
     this.baseURL = baseURL;
@@ -37,6 +43,45 @@ export class HttpClient {
       contentType: 'json',
       ...defaultConfig,
     };
+  }
+
+  /**
+   * Apply request interceptors to the configuration
+   * @param config - Request configuration
+   * @returns Modified configuration
+   */
+  private async _applyRequestInterceptors(config: RequestConfig): Promise<RequestConfig> {
+    let modifiedConfig = config;
+    for (const interceptor of this.requestInterceptors) {
+      modifiedConfig = await interceptor(modifiedConfig);
+    }
+    return modifiedConfig;
+  }
+
+  /**
+   * Apply response interceptors to the response
+   * @param response - HTTP response
+   * @returns Modified response
+   */
+  private async _applyResponseInterceptors<T>(response: HttpResponse<T>): Promise<HttpResponse<T>> {
+    let modifiedResponse = response;
+    for (const interceptor of this.responseInterceptors) {
+      modifiedResponse = await (interceptor as any)(modifiedResponse);
+    }
+    return modifiedResponse;
+  }
+
+  /**
+   * Apply error interceptors to the error
+   * @param error - HTTP client error
+   * @returns Modified error
+   */
+  private async _applyErrorInterceptors(error: HttpClientError): Promise<HttpClientError> {
+    let modifiedError = error;
+    for (const interceptor of this.errorInterceptors) {
+      modifiedError = await interceptor(modifiedError);
+    }
+    return modifiedError;
   }
 
   /**
@@ -399,41 +444,57 @@ export class HttpClient {
       }
     }
 
-    const mergedConfig = this._mergeConfig(config);
-    const contentType = mergedConfig.contentType || this.defaultConfig.contentType || 'json';
-    
-    // Serialize data based on content type
-    const { body, headers: contentTypeHeaders } = this._serializeData(data, contentType);
-    
-    const finalConfig = {
-      ...mergedConfig,
-      body,
-      headers: {
-        ...mergedConfig.headers,
-        ...contentTypeHeaders,
-      },
-    };
-
-    const url = this._buildURL(endpoint);
-    const response = await this._makeRequest(url, finalConfig);
-    
-    if (mergedConfig.rawResponse) {
-      return {
-        data: response as unknown as T,
-        timings: response.timings,
-        statusCode: response.status,
-        headers: response.headers,
+    try {
+      // Apply request interceptors
+      const interceptedConfig = await this._applyRequestInterceptors(config);
+      
+      const mergedConfig = this._mergeConfig(interceptedConfig);
+      const contentType = mergedConfig.contentType || this.defaultConfig.contentType || 'json';
+      
+      // Serialize data based on content type
+      const { body, headers: contentTypeHeaders } = this._serializeData(data, contentType);
+      
+      const finalConfig = {
+        ...mergedConfig,
+        body,
+        headers: {
+          ...mergedConfig.headers,
+          ...contentTypeHeaders,
+        },
       };
-    }
 
-    const parsedData = await this._parseResponse(response);
-    
-    return {
-      data: parsedData as T,
-      timings: response.timings,
-      statusCode: response.status,
-      headers: response.headers,
-    };
+      const url = this._buildURL(endpoint);
+      const response = await this._makeRequest(url, finalConfig);
+      
+      let finalResponse: HttpResponse<T>;
+      
+      if (mergedConfig.rawResponse) {
+        finalResponse = {
+          data: response as unknown as T,
+          timings: response.timings,
+          statusCode: response.status,
+          headers: response.headers,
+        };
+      } else {
+        const parsedData = await this._parseResponse(response);
+        finalResponse = {
+          data: parsedData as T,
+          timings: response.timings,
+          statusCode: response.status,
+          headers: response.headers,
+        };
+      }
+
+      // Apply response interceptors
+      return await this._applyResponseInterceptors(finalResponse);
+    } catch (error) {
+      if (error instanceof HttpClientError) {
+        // Apply error interceptors
+        const interceptedError = await this._applyErrorInterceptors(error);
+        throw interceptedError;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -761,6 +822,60 @@ export class HttpClient {
     // This method can be used to clean up any persistent connections
     // Currently, Node.js handles connection cleanup automatically
     // but this provides a hook for future connection pooling
+  }
+
+  /**
+   * Add a request interceptor
+   * @param interceptor - Function to intercept and modify requests
+   */
+  addRequestInterceptor(interceptor: RequestInterceptor): void {
+    this.requestInterceptors.push(interceptor);
+  }
+
+  /**
+   * Add a response interceptor
+   * @param interceptor - Function to intercept and modify responses
+   */
+  addResponseInterceptor(interceptor: ResponseInterceptor): void {
+    this.responseInterceptors.push(interceptor);
+  }
+
+  /**
+   * Add an error interceptor
+   * @param interceptor - Function to intercept and modify errors
+   */
+  addErrorInterceptor(interceptor: ErrorInterceptor): void {
+    this.errorInterceptors.push(interceptor);
+  }
+
+  /**
+   * Clear all request interceptors
+   */
+  clearRequestInterceptors(): void {
+    this.requestInterceptors = [];
+  }
+
+  /**
+   * Clear all response interceptors
+   */
+  clearResponseInterceptors(): void {
+    this.responseInterceptors = [];
+  }
+
+  /**
+   * Clear all error interceptors
+   */
+  clearErrorInterceptors(): void {
+    this.errorInterceptors = [];
+  }
+
+  /**
+   * Clear all interceptors
+   */
+  clearAllInterceptors(): void {
+    this.clearRequestInterceptors();
+    this.clearResponseInterceptors();
+    this.clearErrorInterceptors();
   }
 }
 
